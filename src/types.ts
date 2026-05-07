@@ -49,3 +49,12 @@ export interface AppData {
   badges: Badge[];
   lastUpdated?: number;
 }
+
+export interface User {
+  id: string;
+  email: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  avatarUrl: string;
+}

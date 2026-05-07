@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { type FormEvent, useState } from 'react';
 import { Task } from '../services/taskService';
 
 interface TaskFormProps {
@@ -13,7 +13,7 @@ export function TaskForm({ onSubmit, loading = false }: TaskFormProps) {
   const [dueDate, setDueDate] = useState('');
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSubmitError(null);
 

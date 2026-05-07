@@ -19,6 +19,8 @@ import {
   Image as ImageIcon,
   Flame,
   Trophy,
+  Pencil,
+  Sun,
   Activity,
   Trash2,
   Check,
@@ -26,8 +28,13 @@ import {
   Sparkles,
   Search,
   Loader2,
+  Grid,
   Wifi,
-  WifiOff
+  WifiOff,
+  MoreVertical,
+  Send,
+  Bot,
+  User as UserIcon
 } from 'lucide-react';
 import { 
   format, 
@@ -58,17 +65,20 @@ import { motion, AnimatePresence } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { v4 as uuidv4 } from 'uuid';
-
-import { Habit, Task, Badge, AppTheme, AppData, HabitType } from './types';
+import { Habit, Task, Badge, AppTheme, AppData, HabitType, User } from './types';
+import { cn } from './utils';
+import { DashboardView } from './DashboardView';
 import { DEFAULT_THEMES, BADGES } from './constants';
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+import { Login } from './components/Login';
+import { Signup } from './components/Signup';
+import { UserProfile } from './components/UserProfile';
 
 export default function App() {
   // --- State ---
-  const [activeTab, setActiveTab] = useState<'day' | 'week' | 'month' | 'grid' | 'habits' | 'stats' | 'settings' | 'ideas'>('day');
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'day' | 'week' | 'month' | 'grid' | 'habits' | 'stats' | 'settings' | 'dashboard'>('day');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [habits, setHabits] = useState<Habit[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -77,12 +87,61 @@ export default function App() {
   const [bgImage, setBgImage] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<'task' | 'habit' | null>(null);
+  const [editingItem, setEditingItem] = useState<Task | Habit | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
   const [hasPendingChanges, setHasPendingChanges] = useState(false);
   const [syncProgress, setSyncProgress] = useState(0);
-  const [aiSuggestions, setAiSuggestions] = useState<string>('');
-  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [chatMessages, setChatMessages] = useState<{role: 'user' | 'model', text: string}[]>([
+    { role: 'model', text: 'Hello! I am your AI productivity agent. How can I help you crush your goals today?' }
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [isChatLoading, setIsChatLoading] = useState(false);
+
+  // --- Persistence ---
+  useEffect(() => {
+    // Check if user is already logged in
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        const user: User = JSON.parse(savedUser);
+        setCurrentUser(user);
+      } catch (e) {
+        console.error('Failed to parse saved user', e);
+        localStorage.removeItem('user');
+      }
+    }
+    setIsAuthLoading(false);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    setCurrentUser(null);
+    setAuthMode('login');
+  };
+
+  // If not authenticated, show login/signup
+  if (!currentUser) {
+    return isAuthLoading ? (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 via-purple-600 to-pink-500">
+        <div className="text-white flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin" />
+          <p>Loading Habit Tracker...</p>
+        </div>
+      </div>
+    ) : authMode === 'login' ? (
+      <Login
+        onLoginSuccess={setCurrentUser}
+        onSwitchToSignup={() => setAuthMode('signup')}
+      />
+    ) : (
+      <Signup
+        onSignupSuccess={setCurrentUser}
+        onSwitchToLogin={() => setAuthMode('login')}
+      />
+    );
+  }
 
   // --- Persistence ---
   useEffect(() => {
@@ -104,8 +163,13 @@ export default function App() {
       try {
         const response = await fetch('/api/data');
         if (response.ok) {
-          serverData = await response.json() as AppData;
-          setIsOnline(true);
+          const contentType = response.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            serverData = await response.json() as AppData;
+            setIsOnline(true);
+          } else {
+            setIsOnline(false);
+          }
         } else {
           setIsOnline(false);
         }
@@ -207,8 +271,8 @@ export default function App() {
     };
     localStorage.setItem('habit_tracker_data', JSON.stringify(data));
     setHasPendingChanges(true);
-    // Removed auto-save to server
-    // saveDataToServer(data);
+    // Auto-save to server on changes
+    saveDataToServer(data);
 
     // Badge Logic
     const newBadges = [...unlockedBadges];
@@ -267,10 +331,15 @@ export default function App() {
     reader.readAsText(file);
   };
 
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingItem(null);
+  };
+
   const addTask = (task: Omit<Task, 'id'>) => {
     const newTask = { ...task, id: uuidv4() };
     setTasks([...tasks, newTask]);
-    setIsModalOpen(false);
+    closeModal();
   };
 
   const addHabit = (habit: Omit<Habit, 'id' | 'streak' | 'history' | 'createdAt'>) => {
@@ -282,8 +351,19 @@ export default function App() {
       createdAt: new Date().toISOString()
     };
     setHabits([...habits, newHabit]);
-    setIsModalOpen(false);
+    closeModal();
   };
+
+  const updateTask = (id: string, data: Partial<Task>) => {
+    setTasks(tasks.map(t => t.id === id ? {...t, ...data} : t));
+    closeModal();
+  };
+
+  const updateHabit = (id: string, data: Partial<Habit>) => {
+    setHabits(habits.map(h => h.id === id ? {...h, ...data} : h));
+    closeModal();
+  };
+
 
   const toggleTask = (taskId: string) => {
     setTasks(tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t));
@@ -331,9 +411,9 @@ export default function App() {
 
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-800">{format(selectedDate, 'EEEE, MMMM do')}</h2>
-          <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800">{format(selectedDate, 'EEEE, MMMM do')}</h2>
+          <div className="flex gap-2 self-start sm:self-auto">
             <button onClick={() => setSelectedDate(addDays(selectedDate, -1))} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><ChevronLeft size={20} /></button>
             <button onClick={() => setSelectedDate(new Date())} className="px-3 py-1 text-sm font-medium hover:bg-gray-100 rounded-md transition-colors">Today</button>
             <button onClick={() => setSelectedDate(addDays(selectedDate, 1))} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><ChevronRight size={20} /></button>
@@ -375,6 +455,7 @@ export default function App() {
                       <p className={cn("font-medium", task.completed && "line-through text-gray-400")}>{task.title}</p>
                       {task.startTime && <p className="text-xs text-gray-500">{task.startTime} - {task.endTime}</p>}
                     </div>
+                    <button onClick={() => { setEditingItem(task); setModalType('task'); setIsModalOpen(true); }} className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-indigo-500 transition-all"><Pencil size={16} /></button>
                     <button onClick={() => deleteTask(task.id)} className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 transition-all"><Trash2 size={16} /></button>
                   </motion.div>
                 ))
@@ -440,16 +521,17 @@ export default function App() {
 
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-800">Week of {format(start, 'MMM do')}</h2>
-          <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Week of {format(start, 'MMM do')}</h2>
+          <div className="flex gap-2 self-start sm:self-auto">
             <button onClick={() => setSelectedDate(addDays(selectedDate, -7))} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><ChevronLeft size={20} /></button>
             <button onClick={() => setSelectedDate(new Date())} className="px-3 py-1 text-sm font-medium hover:bg-gray-100 rounded-md transition-colors">This Week</button>
             <button onClick={() => setSelectedDate(addDays(selectedDate, 7))} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><ChevronRight size={20} /></button>
           </div>
         </div>
 
-        <div className="grid grid-cols-7 gap-4">
+        <div className="overflow-x-auto pb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
           {days.map(day => {
             const dayTasks = tasks.filter(t => t.date === format(day, 'yyyy-MM-dd'));
             const isTodayDay = isToday(day);
@@ -476,6 +558,7 @@ export default function App() {
             );
           })}
         </div>
+        </div>
       </div>
     );
   };
@@ -489,16 +572,17 @@ export default function App() {
 
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-800">{format(selectedDate, 'MMMM yyyy')}</h2>
-          <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800">{format(selectedDate, 'MMMM yyyy')}</h2>
+          <div className="flex gap-2 self-start sm:self-auto">
             <button onClick={() => setSelectedDate(subMonths(selectedDate, 1))} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><ChevronLeft size={20} /></button>
             <button onClick={() => setSelectedDate(new Date())} className="px-3 py-1 text-sm font-medium hover:bg-gray-100 rounded-md transition-colors">Today</button>
             <button onClick={() => setSelectedDate(addMonths(selectedDate, 1))} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><ChevronRight size={20} /></button>
           </div>
         </div>
 
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-sm border border-white/20 overflow-hidden">
+        <div className="overflow-x-auto pb-4">
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-sm border border-white/20 overflow-hidden min-w-[700px]">
           <div className="grid grid-cols-7 bg-gray-50/50 border-bottom border-white/20">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
               <div key={d} className="py-3 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">{d}</div>
@@ -537,6 +621,7 @@ export default function App() {
                 </div>
               );
             })}
+          </div>
           </div>
         </div>
       </div>
@@ -706,7 +791,7 @@ export default function App() {
             </button>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <button 
               onClick={exportData}
               className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 text-white py-3 rounded-2xl font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200"
@@ -752,25 +837,46 @@ export default function App() {
   // --- Modal ---
   const Modal = () => {
     const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
     const [type, setType] = useState<HabitType>('positive');
-    const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
+    const [priority, setPriority] = useState<'LOW' | 'MEDIUM' | 'HIGH'>('MEDIUM');
     const [startTime, setStartTime] = useState('09:00');
     const [endTime, setEndTime] = useState('10:00');
+    const isEditing = editingItem !== null;
+
+    useEffect(() => {
+      if (isEditing && editingItem) {
+        if (modalType === 'task' && 'completed' in editingItem) {
+          setTitle(editingItem.title);
+          setPriority(editingItem.priority || 'MEDIUM');
+          setStartTime(editingItem.startTime || '09:00');
+          setEndTime(editingItem.endTime || '10:00');
+        } else if (modalType === 'habit' && 'streak' in editingItem) {
+          setTitle(editingItem.name);
+          setType(editingItem.type);
+        }
+      } else {
+        setTitle('');
+        setType('positive');
+        setPriority('MEDIUM');
+        setStartTime('09:00');
+        setEndTime('10:00');
+      }
+    }, [isEditing, editingItem, modalType]);
 
     if (!isModalOpen) return null;
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
         <motion.div 
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden"
+          initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+          className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden max-h-[90dvh] flex flex-col"
         >
           <div className={cn("p-6 text-white flex justify-between items-center", theme.primary)}>
-            <h3 className="text-xl font-bold">Add New {modalType === 'task' ? 'Task' : 'Habit'}</h3>
-            <button onClick={() => setIsModalOpen(false)} className="p-1 hover:bg-white/20 rounded-full transition-colors"><X size={24} /></button>
+            <h3 className="text-xl font-bold">{isEditing ? 'Edit' : 'Add New'} {modalType === 'task' ? 'Task' : 'Habit'}</h3>
+            <button onClick={closeModal} className="p-1 hover:bg-white/20 rounded-full transition-colors"><X size={24} /></button>
           </div>
-          <div className="p-6 space-y-4">
+          <div className="p-4 sm:p-6 space-y-4 overflow-y-auto">
             <div>
               <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Title / Name</label>
               <input 
@@ -798,7 +904,7 @@ export default function App() {
                 <div>
                   <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Priority</label>
                   <div className="flex gap-2">
-                    {(['low', 'medium', 'high'] as const).map(p => (
+                    {(['LOW', 'MEDIUM', 'HIGH'] as const).map(p => (
                       <button 
                         key={p}
                         onClick={() => setPriority(p)}
@@ -842,15 +948,23 @@ export default function App() {
             <button 
               disabled={!title}
               onClick={() => {
-                if (modalType === 'task') {
-                  addTask({ title, date: format(selectedDate, 'yyyy-MM-dd'), completed: false, priority, startTime, endTime });
+                if (isEditing && editingItem) {
+                  if (modalType === 'task' && 'completed' in editingItem) {
+                    updateTask(editingItem.id, { title, priority, startTime, endTime });
+                  } else if (modalType === 'habit' && 'streak' in editingItem) {
+                    updateHabit(editingItem.id, { name: title, type });
+                  }
                 } else {
-                  addHabit({ name: title, type, frequency: 'daily' });
+                  if (modalType === 'task') {
+                    addTask({ title, description, date: format(selectedDate, 'yyyy-MM-dd'), completed: false, priority, startTime, endTime });
+                  } else {
+                    addHabit({ name: title, type, frequency: 'daily' });
+                  }
                 }
               }}
               className={cn("w-full py-4 rounded-2xl text-white font-bold text-lg shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed", theme.primary)}
             >
-              Create {modalType === 'task' ? 'Task' : 'Habit'}
+              {isEditing ? 'Update' : 'Create'} {modalType === 'task' ? 'Task' : 'Habit'}
             </button>
           </div>
         </motion.div>
@@ -864,16 +978,16 @@ export default function App() {
 
     return (
       <div className="space-y-6 overflow-x-auto">
-        <div className="flex items-center justify-between min-w-[800px]">
-          <h2 className="text-2xl font-bold text-gray-800">Weekly Habit Matrix</h2>
-          <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Weekly Habit Matrix</h2>
+          <div className="flex gap-2 self-start sm:self-auto">
             <button onClick={() => setSelectedDate(addDays(selectedDate, -7))} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><ChevronLeft size={20} /></button>
             <button onClick={() => setSelectedDate(new Date())} className="px-3 py-1 text-sm font-medium hover:bg-gray-100 rounded-md transition-colors">This Week</button>
             <button onClick={() => setSelectedDate(addDays(selectedDate, 7))} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><ChevronRight size={20} /></button>
           </div>
         </div>
 
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-sm border border-white/20 overflow-hidden min-w-[800px]">
+        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-sm border border-white/20 overflow-hidden">
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-gray-50/50">
@@ -930,8 +1044,8 @@ export default function App() {
   const HabitManagerView = () => {
     return (
       <div className="space-y-8">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-800">Habit Management</h2>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800">Habit Management</h2>
           <button 
             onClick={() => { setModalType('habit'); setIsModalOpen(true); }}
             className={cn("flex items-center gap-2 px-4 py-2 text-white rounded-xl font-bold transition-opacity", theme.primary)}
@@ -982,6 +1096,12 @@ export default function App() {
                   }).reverse()}
                 </div>
 
+                <button
+                  onClick={() => { setEditingItem(habit); setModalType('habit'); setIsModalOpen(true); }}
+                  className="absolute top-4 right-12 opacity-0 group-hover:opacity-100 p-2 text-gray-400 hover:text-indigo-500 transition-all"
+                >
+                  <Pencil size={18} />
+                </button>
                 <button 
                   onClick={() => deleteHabit(habit.id)}
                   className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 p-2 text-gray-400 hover:text-red-500 transition-all"
@@ -996,67 +1116,10 @@ export default function App() {
     );
   };
 
-  const getAiIdeas = async () => {
-    setIsAiLoading(true);
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: "Suggest 5 creative UX/UI features and design improvements for a habit tracker and planner app. Focus on 'mrvbfit planner' style and modern aesthetics. Provide the response in a clean markdown format.",
-      });
-      setAiSuggestions(response.text || 'No suggestions found.');
-    } catch (e) {
-      console.error('AI Error', e);
-      setAiSuggestions('Failed to load AI suggestions. Please check your API key.');
-    } finally {
-      setIsAiLoading(false);
-    }
-  };
-
-  const IdeasView = () => {
-    return (
-      <div className="space-y-8">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2"><Sparkles className="text-indigo-500" /> UX/UI Ideas & Features</h2>
-          <button 
-            disabled={isAiLoading}
-            onClick={getAiIdeas}
-            className={cn("flex items-center gap-2 px-4 py-2 text-white rounded-xl font-bold transition-all disabled:opacity-50", theme.primary)}
-          >
-            {isAiLoading ? <Loader2 className="animate-spin" size={20} /> : <Search size={20} />}
-            {aiSuggestions ? 'Refresh Ideas' : 'Search for Ideas'}
-          </button>
-        </div>
-
-        <div className="bg-white/80 backdrop-blur-sm p-8 rounded-3xl shadow-sm border border-white/20 min-h-[400px]">
-          {!aiSuggestions && !isAiLoading ? (
-            <div className="flex flex-col items-center justify-center h-full py-20 text-center">
-              <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mb-4">
-                <Sparkles className="text-indigo-500" size={40} />
-              </div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">Need Inspiration?</h3>
-              <p className="text-gray-500 max-w-md">Click the button above to generate AI-powered UX/UI ideas and feature suggestions for your habit tracker.</p>
-            </div>
-          ) : isAiLoading ? (
-            <div className="flex flex-col items-center justify-center h-full py-20 text-center">
-              <Loader2 className="animate-spin text-indigo-500 mb-4" size={40} />
-              <p className="text-gray-500 animate-pulse">Searching the web for the best planner designs...</p>
-            </div>
-          ) : (
-            <div className="prose prose-indigo max-w-none">
-              <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
-                {aiSuggestions}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
   function NavItem({ active, onClick, icon, label }: { active: boolean; onClick: () => void; icon: React.ReactNode; label: string }) {
     return (
       <button 
-        onClick={onClick}
+        onClick={() => { onClick(); setIsMobileMenuOpen(false); }}
         className={cn(
           "w-full flex items-center gap-3 p-3 rounded-2xl transition-all group",
           active ? cn(theme.primary, "text-white shadow-lg shadow-indigo-100") : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
@@ -1065,7 +1128,7 @@ export default function App() {
         <span className={cn("transition-transform group-hover:scale-110", active ? "text-white" : "text-gray-400 group-hover:text-gray-600")}>
           {icon}
         </span>
-        <span className="hidden lg:block font-bold text-sm">{label}</span>
+        <span className="font-bold text-sm">{label}</span>
       </button>
     );
   }
@@ -1084,68 +1147,134 @@ export default function App() {
       )}
 
       {/* Main Layout */}
-      <div className="relative z-10 flex h-screen overflow-hidden">
-        {/* Sidebar */}
-        <aside className="w-20 lg:w-64 bg-white/90 backdrop-blur-md border-r border-white/20 flex flex-col p-4 lg:p-6">
-          <div className="flex items-center gap-3 mb-10 px-2">
-            <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-lg", theme.primary)}>
-              <CalendarIcon size={24} />
+      <div className="relative z-10 flex flex-col lg:flex-row h-[100dvh] overflow-hidden">
+        {/* Mobile Header (Hidden on Desktop) */}
+        <header className="lg:hidden flex items-center justify-between bg-white/90 backdrop-blur-md border-b border-white/20 p-4 shrink-0 z-40">
+          <div className="flex items-center gap-3">
+            <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-md font-bold text-lg", theme.primary)}>
+              ✓
             </div>
-            <div className="hidden lg:block">
+            <div className="flex flex-col">
+              <h1 className="text-sm font-black tracking-tighter text-gray-800">HABIT TRACKER</h1>
+              <p className="text-[10px] text-gray-500">Build better habits</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {isSaving ? (
+              <span className="text-[10px] font-bold text-indigo-500 animate-pulse uppercase flex items-center gap-1"><Loader2 size={12} className="animate-spin" /> Syncing</span>
+            ) : isOnline ? (
+              <Wifi size={16} className="text-emerald-500" />
+            ) : (
+              <WifiOff size={16} className="text-orange-500" />
+            )}
+            <UserProfile user={currentUser} onLogout={handleLogout} />
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="p-2 ml-1 bg-gray-100 hover:bg-gray-200 rounded-xl text-gray-600 transition-colors"
+            >
+              <MoreVertical size={20} />
+            </button>
+          </div>
+        </header>
+
+        {/* Mobile Menu Overlay */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Sidebar / Mobile Drawer */}
+        <aside className={cn(
+          "absolute lg:relative inset-y-0 right-0 lg:left-0 z-50 w-64 bg-white/95 lg:bg-white/90 backdrop-blur-xl border-l lg:border-l-0 lg:border-r border-white/20 flex flex-col p-6 shrink-0 transition-transform duration-300 shadow-2xl lg:shadow-none",
+          isMobileMenuOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"
+        )}>
+          <div className="flex items-center justify-between lg:hidden mb-8">
+            <h2 className="font-black text-gray-800 tracking-tighter">MENU</h2>
+            <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 bg-gray-100 rounded-full text-gray-600 hover:bg-gray-200 transition-colors">
+              <X size={16} />
+            </button>
+          </div>
+
+          <div className="flex items-center gap-3 mb-10 px-2">
+            <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-lg font-bold text-lg", theme.primary)}>
+              ✓
+            </div>
+            <div className="hidden lg:block flex-1">
               <h1 className="text-xl font-black tracking-tighter text-gray-800">HABIT TRACKER</h1>
-              <div className="flex flex-col gap-1 mt-1">
-                <div className="flex items-center gap-1.5">
-                  {isSaving ? (
-                    <p className="text-[8px] font-bold text-indigo-500 animate-pulse uppercase">Syncing {syncProgress}%</p>
-                  ) : isOnline ? (
-                    <>
-                      <Wifi size={8} className="text-emerald-500" />
-                      <p className="text-[8px] font-bold text-emerald-500 uppercase">Connected</p>
-                    </>
-                  ) : (
-                    <>
-                      <WifiOff size={8} className="text-orange-500" />
-                      <p className="text-[8px] font-bold text-orange-500 uppercase">Offline</p>
-                    </>
-                  )}
-                </div>
-                
-                {hasPendingChanges && !isSaving && (
-                  <button 
-                    onClick={handleManualSync}
-                    className="flex items-center gap-1 px-2 py-1 bg-indigo-500 text-white rounded-md text-[8px] font-bold uppercase hover:bg-indigo-600 transition-colors shadow-sm"
-                  >
-                    <Upload size={8} /> Add to MongoDB
-                  </button>
-                )}
-                
-                {isSaving && (
-                  <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden">
-                    <motion.div 
-                      className="h-full bg-indigo-500"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${syncProgress}%` }}
-                    />
-                  </div>
-                )}
+              <p className="text-[10px] text-gray-500 mt-0.5">Build better habits, one day at a time</p>
+            </div>
+          </div>
+
+          {/* Desktop User Profile Section */}
+          <div className="hidden lg:block mb-6 px-2">
+            <div className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-100 rounded-2xl p-4">
+              <UserProfile user={currentUser} onLogout={handleLogout} />
+              <div className="mt-3 text-[11px] text-gray-600">
+                <p className="font-semibold">Welcome back!</p>
+                <p className="mt-1">{currentUser.email}</p>
               </div>
             </div>
           </div>
 
-          <nav className="flex-1 space-y-2">
-            <NavItem active={activeTab === 'day'} onClick={() => setActiveTab('day')} icon={<LayoutDashboard size={20} />} label="Day View" />
+          {/* Sync Status Section */}
+          <div className="hidden lg:block mb-6 px-2">
+            <div className="flex flex-col gap-1">
+              {isSaving ? (
+                <p className="text-[8px] font-bold text-indigo-500 animate-pulse uppercase">Syncing {syncProgress}%</p>
+              ) : isOnline ? (
+                <>
+                  <Wifi size={8} className="text-emerald-500" />
+                  <p className="text-[8px] font-bold text-emerald-500 uppercase">Connected</p>
+                </>
+              ) : (
+                <>
+                  <WifiOff size={8} className="text-orange-500" />
+                  <p className="text-[8px] font-bold text-orange-500 uppercase">Offline</p>
+                </>
+              )}
+            </div>
+            
+            {hasPendingChanges && !isSaving && (
+              <button 
+                onClick={handleManualSync}
+                className="mt-2 w-full flex items-center justify-center gap-1 px-2 py-1 bg-indigo-500 text-white rounded-md text-[8px] font-bold uppercase hover:bg-indigo-600 transition-colors shadow-sm"
+              >
+                <Upload size={8} /> Add to MongoDB
+              </button>
+            )}
+            
+            {isSaving && (
+              <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden mt-2">
+                <motion.div 
+                  className="h-full bg-indigo-500"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${syncProgress}%` }}
+                />
+              </div>
+            )}
+          </div>
+
+          <nav className="flex flex-col space-y-2 w-full flex-1">
+            <NavItem active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} icon={<LayoutDashboard size={20} />} label="Dashboard" />
+            <NavItem active={activeTab === 'day'} onClick={() => setActiveTab('day')} icon={<Sun size={20} />} label="Day View" />
             <NavItem active={activeTab === 'week'} onClick={() => setActiveTab('week')} icon={<CalendarIcon size={20} />} label="Week View" />
             <NavItem active={activeTab === 'month'} onClick={() => setActiveTab('month')} icon={<CalendarIcon size={20} />} label="Month View" />
-            <NavItem active={activeTab === 'grid'} onClick={() => setActiveTab('grid')} icon={<LayoutDashboard size={20} />} label="Grid Matrix" />
+            <NavItem active={activeTab === 'grid'} onClick={() => setActiveTab('grid')} icon={<Grid size={20} />} label="Grid Matrix" />
             <NavItem active={activeTab === 'habits'} onClick={() => setActiveTab('habits')} icon={<Activity size={20} />} label="Habits" />
-            <div className="h-px bg-gray-100 my-4 mx-2"></div>
+            <div className="h-px bg-gray-100 my-4 mx-2 shrink-0"></div>
             <NavItem active={activeTab === 'stats'} onClick={() => setActiveTab('stats')} icon={<BarChart3 size={20} />} label="Analytics" />
-            <NavItem active={activeTab === 'ideas'} onClick={() => setActiveTab('ideas')} icon={<Sparkles size={20} />} label="Ideas" />
             <NavItem active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} icon={<Settings size={20} />} label="Settings" />
           </nav>
 
           <div className="mt-auto pt-6 px-2">
-            <div className="hidden lg:block bg-gray-50 rounded-2xl p-4 border border-gray-100">
+            <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
               <p className="text-[10px] font-bold text-gray-400 uppercase mb-2">Daily Progress</p>
               <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div 
@@ -1161,7 +1290,7 @@ export default function App() {
         </aside>
 
         {/* Content Area */}
-        <main className="flex-1 overflow-y-auto p-6 lg:p-10 scrollbar-hide">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-10 scrollbar-hide">
           <div className="max-w-6xl mx-auto">
             <AnimatePresence mode="wait">
               <motion.div
@@ -1171,13 +1300,27 @@ export default function App() {
                 exit={{ opacity: 0, x: -10 }}
                 transition={{ duration: 0.2 }}
               >
+                {activeTab === 'dashboard' && <DashboardView
+                  tasks={tasks}
+                  habits={habits}
+                  theme={theme}
+                  chatMessages={chatMessages}
+                  chatInput={chatInput}
+                  isChatLoading={isChatLoading}
+                  setSelectedDate={setSelectedDate}
+                  setModalType={setModalType}
+                  setIsModalOpen={setIsModalOpen}
+                  setChatMessages={setChatMessages}
+                  setChatInput={setChatInput}
+                  setIsChatLoading={setIsChatLoading}
+                  toggleTask={toggleTask}
+                  toggleHabit={toggleHabit} />}
                 {activeTab === 'day' && <DayView />}
                 {activeTab === 'week' && <WeekView />}
                 {activeTab === 'month' && <MonthView />}
                 {activeTab === 'grid' && <GridView />}
                 {activeTab === 'habits' && <HabitManagerView />}
                 {activeTab === 'stats' && <StatsView />}
-                {activeTab === 'ideas' && <IdeasView />}
                 {activeTab === 'settings' && <SettingsView />}
               </motion.div>
             </AnimatePresence>

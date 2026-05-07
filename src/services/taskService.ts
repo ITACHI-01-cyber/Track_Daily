@@ -1,6 +1,4 @@
 // API service for communicating with the backend
-import axios, { AxiosInstance, AxiosError } from 'axios';
-
 export interface Task {
   id?: string;
   title: string;
@@ -13,16 +11,26 @@ export interface Task {
 }
 
 class TaskService {
-  private api: AxiosInstance;
   private baseURL: string = 'http://localhost:8080/api/tasks';
 
-  constructor() {
-    this.api = axios.create({
-      baseURL: this.baseURL,
+  private async request<T>(path: string, options?: RequestInit): Promise<T> {
+    const response = await fetch(`${this.baseURL}${path}`, {
+      ...options,
       headers: {
         'Content-Type': 'application/json',
+        ...options?.headers,
       },
     });
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+
+    if (response.status === 204) {
+      return undefined as T;
+    }
+
+    return response.json() as Promise<T>;
   }
 
   /**
@@ -30,8 +38,7 @@ class TaskService {
    */
   async getAllTasks(): Promise<Task[]> {
     try {
-      const response = await this.api.get<Task[]>('/');
-      return response.data;
+      return await this.request<Task[]>('/');
     } catch (error) {
       this.handleError(error);
       throw error;
@@ -43,8 +50,7 @@ class TaskService {
    */
   async getTaskById(id: string): Promise<Task> {
     try {
-      const response = await this.api.get<Task>(`/${id}`);
-      return response.data;
+      return await this.request<Task>(`/${id}`);
     } catch (error) {
       this.handleError(error);
       throw error;
@@ -56,8 +62,10 @@ class TaskService {
    */
   async createTask(task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>): Promise<Task> {
     try {
-      const response = await this.api.post<Task>('/', task);
-      return response.data;
+      return await this.request<Task>('/', {
+        method: 'POST',
+        body: JSON.stringify(task),
+      });
     } catch (error) {
       this.handleError(error);
       throw error;
@@ -69,8 +77,10 @@ class TaskService {
    */
   async updateTask(id: string, task: Partial<Task>): Promise<Task> {
     try {
-      const response = await this.api.put<Task>(`/${id}`, task);
-      return response.data;
+      return await this.request<Task>(`/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(task),
+      });
     } catch (error) {
       this.handleError(error);
       throw error;
@@ -82,7 +92,7 @@ class TaskService {
    */
   async deleteTask(id: string): Promise<void> {
     try {
-      await this.api.delete(`/${id}`);
+      await this.request<void>(`/${id}`, { method: 'DELETE' });
     } catch (error) {
       this.handleError(error);
       throw error;
@@ -94,7 +104,7 @@ class TaskService {
    */
   async deleteAllTasks(): Promise<void> {
     try {
-      await this.api.delete('/');
+      await this.request<void>('/', { method: 'DELETE' });
     } catch (error) {
       this.handleError(error);
       throw error;
@@ -106,10 +116,7 @@ class TaskService {
    */
   async getTasksByCompleted(completed: boolean): Promise<Task[]> {
     try {
-      const response = await this.api.get<Task[]>('/filter/completed', {
-        params: { completed },
-      });
-      return response.data;
+      return await this.request<Task[]>(`/filter/completed?completed=${completed}`);
     } catch (error) {
       this.handleError(error);
       throw error;
@@ -121,10 +128,7 @@ class TaskService {
    */
   async getTasksByPriority(priority: 'LOW' | 'MEDIUM' | 'HIGH'): Promise<Task[]> {
     try {
-      const response = await this.api.get<Task[]>('/filter/priority', {
-        params: { priority },
-      });
-      return response.data;
+      return await this.request<Task[]>(`/filter/priority?priority=${encodeURIComponent(priority)}`);
     } catch (error) {
       this.handleError(error);
       throw error;
@@ -135,16 +139,7 @@ class TaskService {
    * Handle errors
    */
   private handleError(error: unknown): void {
-    if (axios.isAxiosError(error)) {
-      const axiosError = error as AxiosError;
-      console.error('API Error:', {
-        status: axiosError.response?.status,
-        message: axiosError.response?.statusText,
-        data: axiosError.response?.data,
-      });
-    } else {
-      console.error('Error:', error);
-    }
+    console.error('Error:', error);
   }
 }
 

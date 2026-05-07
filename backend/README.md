@@ -6,7 +6,7 @@ Spring Boot REST API backend for Habit Track application with MongoDB integratio
 
 - Java 17 or higher
 - Maven 3.6+
-- MongoDB 4.0+ (running locally or accessible)
+- MongoDB Atlas connection string in the repo root `.env`
 
 ## Project Structure
 
@@ -27,14 +27,14 @@ src/main/java/com/habittrack/
 
 ## Getting Started
 
-### 1. Ensure MongoDB is Running
+### 1. Configure Atlas Environment
+
+Create or update `../.env` from the backend directory:
 
 ```bash
-# If using Docker
-docker run -d -p 27017:27017 --name mongodb mongo:latest
-
-# Or if MongoDB is installed locally
-mongod
+MONGODB_URI="mongodb+srv://<user>:<password>@<cluster>/?appName=<app>"
+MONGODB_DATABASE="habit-track"
+GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
 ```
 
 ### 2. Build the Project
@@ -137,7 +137,7 @@ GET /api/tasks/filter/priority?priority=HIGH
 
 Edit `src/main/resources/application.properties` to customize:
 
-- **MongoDB URI**: Change connection string for remote MongoDB
+- **MongoDB URI**: Set `MONGODB_URI` in the root `.env`
 - **Server Port**: Change default port (8080)
 - **Logging Level**: Adjust logging verbosity
 

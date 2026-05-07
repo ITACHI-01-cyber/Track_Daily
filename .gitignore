@@ -2,6 +2,11 @@ node_modules/
 build/
 dist/
 coverage/
+target/
+backend/target/
+*.class
+*.db
+App/*.apk
 .DS_Store
 *.log
 .env*

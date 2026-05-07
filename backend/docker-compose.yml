@@ -5,32 +5,37 @@ services:
     image: mongo:latest
     container_name: habit-track-mongodb
     ports:
-      - "27017:27017"
+      - "27018:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_ROOT_PASSWORD: admin
       MONGO_INITDB_DATABASE: habit-track
     volumes:
-      - mongodb-data:/data/db
+      - mongodb_data:/data/db
     networks:
       - habit-track-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  mongo-express:
-    image: mongo-express:latest
-    container_name: habit-track-mongo-express
+  app:
+    build: .
+    container_name: habit-track-app
     ports:
-      - "8081:8081"
+      - "8080:8080"
     environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
-      ME_CONFIG_MONGODB_ADMINPASSWORD: password
-      ME_CONFIG_MONGODB_URL: mongodb://admin:password@mongodb:27017/
+      MONGODB_URI: mongodb://admin:admin@mongodb:27017/habit-track?authSource=admin
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
     networks:
       - habit-track-network
 
 volumes:
-  mongodb-data:
+  mongodb_data:
 
 networks:
   habit-track-network:

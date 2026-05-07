@@ -4,17 +4,11 @@
 
 # Habit Tracker & Personal Planner
 
-A comprehensive personal planner and habit tracker by mrvbfit, built with a modern tech stack. This application features day, week, and month views, integrated habit tracking with streaks, customizable themes, and offline support, all synced to a MongoDB database and deployed seamlessly on Vercel.
+A comprehensive personal planner and habit tracker by mrvbfit, built with a modern tech stack. This application features day, week, and month views, integrated habit tracking with streaks, customizable themes, and offline support, all synced to a MongoDB database.
 
 <div align="center">
 
 ## 🚀 [Live Demo](https://habittrackerfordaily.vercel.app/)
-
-</div>
-
-<div align="center">
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/mrvbfit/Task-manager-with-habit)
 
 </div>
 
@@ -24,7 +18,7 @@ A comprehensive personal planner and habit tracker by mrvbfit, built with a mode
 - **Habit Matrix**: A powerful grid view to visualize your habit consistency across the week.
 - **Advanced Habit Tracking**: Track both positive (to-do) and negative (to-avoid) habits.
 - **Streak System**: Stay motivated by building and maintaining streaks for your positive habits.
-- **Task Management**: Add, edit, and complete daily tasks with priorities and time slots.
+- **Task Management**: Add, edit, and complete daily tasks with priorities and due dates.
 - **Data Analytics**: Visualize your progress with a habit performance score chart and unlock achievements.
 - **Customization**: Personalize your experience with multiple color themes and custom background images.
 - **Offline-First**: Your data is saved locally for offline access and syncs automatically to MongoDB when you're back online.
@@ -52,15 +46,16 @@ A comprehensive personal planner and habit tracker by mrvbfit, built with a mode
 ## 🛠️ Tech Stack
 
 - **Frontend**: React, Vite, TypeScript, Tailwind CSS
-- **Backend**: Express.js (running as a Vercel Serverless Function)
+- **Backend**: Spring Boot, Java 17, Maven
 - **Database**: MongoDB
-- **Deployment**: Vercel
 - **Key Libraries**:
   - `lucide-react` for icons
   - `date-fns` for date manipulation
   - `recharts` for charts
   - `motion` for animations
   - `@google/genai` for AI features
+  - `spring-boot-starter-data-mongodb`
+  - `lombok`
 
 ## 🚀 Getting Started
 
@@ -68,8 +63,10 @@ Follow these instructions to get a copy of the project up and running on your lo
 
 ### Prerequisites
 
+- Java 17 or higher
+- Maven 3.6+
 - Node.js (v18 or later recommended)
-- A MongoDB Atlas account (or a local MongoDB instance).
+- A MongoDB Atlas account.
 - A Gemini API Key from Google.
 
 ### Installation & Setup
@@ -80,49 +77,37 @@ Follow these instructions to get a copy of the project up and running on your lo
     cd Task-manager-with-habit
     ```
 
-2.  **Install dependencies:**
-    ```bash
-    npm install
-    ```
-
 3.  **Set up environment variables:**
-    Create a file named `.env.local` in the root of your project and add the following variables.
+    Create a file named `.env` in the root of your project and add the following variables. This file will be used by the Spring Boot backend.
 
     ```env
     # Your connection string from MongoDB Atlas
-    MONGODB_URI="mongodb+srv://<user>:<password>@cluster.mongodb.net/habit_tracker?retryWrites=true&w=majority"
+    MONGODB_URI="mongodb+srv://<user>:<password>@<cluster>/?appName=<app>"
+    MONGODB_DATABASE="habit-track"
 
     # Your API key from Google for Gemini
     GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
     ```
 
-4.  **Run the development server:**
-    This command starts the Vite development server and the Express backend simultaneously.
+4.  **Install frontend dependencies:**
+    ```bash
+    npm install
+    ```
+
+5.  **Run the Backend Server:**
+    Open a new terminal and navigate to the `backend` directory.
+    ```bash
+    cd backend
+    mvn spring-boot:run
+    ```
+    The backend will start at `http://localhost:8080`.
+
+6.  **Run the Frontend Development Server:**
+    In the root directory of the project, run:
     ```bash
     npm run dev
     ```
-    Open http://localhost:3000 to view it in your browser.
-
-## 🌐 Deployment to Vercel
-
-This project is configured for a seamless deployment to Vercel.
-
-1.  **Push to GitHub:**
-    Ensure your latest code, including the `vercel.json` file, is pushed to your GitHub repository.
-
-2.  **Import Project on Vercel:**
-    - Log in to your Vercel account.
-    - Click **Add New...** > **Project**.
-    - Import your GitHub repository. Vercel will automatically detect it as a Vite project.
-
-3.  **Configure Environment Variables:**
-    - Before deploying, navigate to the **Settings** tab of your new Vercel project.
-    - Go to the **Environment Variables** section.
-    - Add the same `MONGODB_URI` and `GEMINI_API_KEY` that you used in your `.env.local` file.
-
-4.  **Deploy:**
-    - Navigate back to the **Deployments** tab and trigger a new deployment.
-    - Vercel will build the frontend, deploy the Express API as a serverless function, and your site will be live!
+    Open http://localhost:5173 (or the port shown in the terminal) to view it in your browser.
 
 ## 📜 License
 

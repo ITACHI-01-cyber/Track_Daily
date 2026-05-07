@@ -1,6 +1,11 @@
+com/habittrack/controller/DataController.class
 com/habittrack/model/Task.class
+com/habittrack/repository/UserRepository.class
 com/habittrack/service/TaskService.class
 com/habittrack/HabitTrackApplication.class
 com/habittrack/controller/TaskController.class
+com/habittrack/controller/UserController.class
+com/habittrack/model/User.class
 com/habittrack/repository/TaskRepository.class
 com/habittrack/config/CorsConfig.class
+com/habittrack/config/SecurityConfig.class
