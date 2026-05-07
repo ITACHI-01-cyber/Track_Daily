@@ -1,6 +1,3 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
 
 # Habit Tracker & Personal Planner
 
@@ -35,13 +32,6 @@ A comprehensive personal planner and habit tracker by mrvbfit, built with a mode
 | ![Day View](https://via.placeholder.com/400x250.png?text=Day+View) | ![Analytics](https://via.placeholder.com/400x250.png?text=Analytics) | ![Settings](https://via.placeholder.com/400x250.png?text=Settings) |
 | **Month View** | **Habit Manager** | **Mobile View** |
 | ![Month View](https://via.placeholder.com/400x250.png?text=Month+View) | ![Habit Manager](https://via.placeholder.com/400x250.png?text=Habit+Manager) | ![Mobile View](https://via.placeholder.com/400x250.png?text=Mobile+View) |
-
-**To add screenshots:**
-1.  Go to the live demo: https://habittrackerfordaily.vercel.app/
-2.  Take screenshots of the different views (Day, Analytics, etc.).
-3.  Create a folder (e.g., `screenshots`) in your repository.
-4.  Upload the screenshots to that folder.
-5.  Update the markdown above to use the paths to your new screenshots.
 
 ## 🛠️ Tech Stack
 
