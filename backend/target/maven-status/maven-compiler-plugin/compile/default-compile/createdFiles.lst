@@ -1,0 +1,6 @@
+com/habittrack/model/Task.class
+com/habittrack/service/TaskService.class
+com/habittrack/HabitTrackApplication.class
+com/habittrack/config/CorsConfig.class
+com/habittrack/controller/TaskController.class
+com/habittrack/repository/TaskRepository.class

@@ -1,0 +1,50 @@
+### Create a new task
+POST http://localhost:8080/api/tasks
+Content-Type: application/json
+
+{
+  "title": "Complete project documentation",
+  "description": "Write comprehensive documentation for the API endpoints",
+  "completed": false,
+  "priority": "HIGH",
+  "dueDate": "2024-12-31T23:59:59"
+}
+
+### Get all tasks
+GET http://localhost:8080/api/tasks
+
+### Get a specific task (replace {id} with actual task ID)
+GET http://localhost:8080/api/tasks/507f1f77bcf86cd799439011
+
+### Update a task (replace {id} with actual task ID)
+PUT http://localhost:8080/api/tasks/507f1f77bcf86cd799439011
+Content-Type: application/json
+
+{
+  "title": "Updated task title",
+  "description": "Updated description",
+  "completed": true,
+  "priority": "MEDIUM",
+  "dueDate": "2024-12-31T23:59:59"
+}
+
+### Delete a specific task (replace {id} with actual task ID)
+DELETE http://localhost:8080/api/tasks/507f1f77bcf86cd799439011
+
+### Delete all tasks
+DELETE http://localhost:8080/api/tasks
+
+### Get completed tasks
+GET http://localhost:8080/api/tasks/filter/completed?completed=true
+
+### Get incomplete tasks
+GET http://localhost:8080/api/tasks/filter/completed?completed=false
+
+### Get HIGH priority tasks
+GET http://localhost:8080/api/tasks/filter/priority?priority=HIGH
+
+### Get MEDIUM priority tasks
+GET http://localhost:8080/api/tasks/filter/priority?priority=MEDIUM
+
+### Get LOW priority tasks
+GET http://localhost:8080/api/tasks/filter/priority?priority=LOW
