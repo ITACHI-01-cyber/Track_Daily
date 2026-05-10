@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:match*",
+      "destination": "https://trackdaily-production.up.railway.app/api/:match*"
+    }
+  ]
+}
