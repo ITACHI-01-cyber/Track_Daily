@@ -1,5 +1,4 @@
 import { Bot, Loader2, Send, Sparkles, User } from 'lucide-react';
-import { GoogleGenAI } from '@google/genai';
 import { type Dispatch, type SetStateAction } from 'react';
 import { Habit, Task } from '../../types';
 import { cn } from '../../utils';
@@ -35,7 +34,6 @@ export function AIAgentPanel({
     setIsChatLoading(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' });
       const trackerSnapshot = {
         generatedAt: new Date().toISOString(),
         habits: habits.map(habit => ({
@@ -58,21 +56,22 @@ export function AIAgentPanel({
           completed: task.completed,
         })),
       };
-      const contextPrompt = `You are an AI productivity coach inside a habit tracker app.
-You can see the user's full synced habit and tracker data below. Use it when answering.
-Keep responses concise, practical, and specific to the user's real data.
 
-Full tracker snapshot:
-${JSON.stringify(trackerSnapshot, null, 2)}
-
-User message: ${userText}`;
-
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: contextPrompt,
+      const response = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userText: userText,
+          trackerSnapshot: trackerSnapshot,
+        }),
       });
 
-      setChatMessages([...newMessages, { role: 'model', text: response.text || 'I am having trouble thinking right now. Please try again later.' }]);
+      if (!response.ok) {
+        throw new Error(`Server error: ${await response.text()}`);
+      }
+
+      const aiText = await response.text();
+      setChatMessages([...newMessages, { role: 'model', text: aiText || 'I am having trouble thinking right now. Please try again later.' }]);
     } catch (e) {
       console.error('AI Error', e);
       setChatMessages([...newMessages, { role: 'model', text: 'Failed to load AI response. Please check your API key in the environment variables.' }]);

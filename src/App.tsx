@@ -4,7 +4,6 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { GoogleGenAI } from "@google/genai";
 import { 
   Calendar as CalendarIcon, 
   CheckCircle2, 
@@ -97,6 +96,7 @@ export default function App() {
   const [isOnline, setIsOnline] = useState(true);
   const [hasPendingChanges, setHasPendingChanges] = useState(false);
   const [syncProgress, setSyncProgress] = useState(0);
+  const [retryCount, setRetryCount] = useState(0);
   const [chatMessages, setChatMessages] = useState<{role: 'user' | 'model', text: string}[]>([
     { role: 'model', text: 'Hello! I am your AI productivity agent. How can I help you crush your goals today?' }
   ]);
@@ -123,7 +123,7 @@ export default function App() {
 
       // Try to get server data
       try {
-        const response = await fetch('/api/data');
+        const response = await fetch(`/api/data?userId=${currentUser.id}`);
         if (response.ok) {
           const contentType = response.headers.get("content-type");
           if (contentType && contentType.includes("application/json")) {
@@ -136,8 +136,14 @@ export default function App() {
           setIsOnline(false);
         }
       } catch (e) {
-        console.error('Failed to load data from server', e);
         setIsOnline(false);
+        // Auto-retry connection if backend is still booting
+        if (retryCount < 5) {
+          console.log(`Backend still booting up. Retrying connection... (${retryCount + 1}/5)`);
+          setTimeout(() => setRetryCount(prev => prev + 1), 3000);
+        } else {
+          console.error('Failed to load data from server after retries', e);
+        }
       }
 
       // Resolve conflict using timestamps (Last-Write-Wins)
@@ -164,7 +170,7 @@ export default function App() {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []);
+  }, [currentUser.id, retryCount]);
 
   const saveDataToServer = async (data: AppData) => {
     setIsSaving(true);
@@ -182,7 +188,7 @@ export default function App() {
     }, 100);
 
     try {
-      const response = await fetch('/api/data', {
+      const response = await fetch(`/api/data?userId=${currentUser.id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
