@@ -1,13 +1,25 @@
-
 # Habit Tracker & Personal Planner
 
 A comprehensive personal planner and habit tracker by mrvbfit, built with a modern tech stack. This application features day, week, and month views, integrated habit tracking with streaks, customizable themes, and offline support, all synced to a MongoDB database.
 
 <div align="center">
 
-## 🚀 [Live Demo](https://habittrackerfordaily.vercel.app/)
+## 🚀 [Live Web Demo](https://track-daily-git-main-itachi-01-cybers-projects.vercel.app/)
 
 </div>
+## 📱 Mobile App (APK)
+
+We also offer a mobile application version of the Habit Tracker! 
+
+[**⬇️ Download the Android APK Here**](https://drive.google.com/file/d/1L-RYsc0_xIEFHZjNoRqWqDMso3ed6Ym4/view?usp=sharing)
+
+**How to Install:**
+1. Download the `.apk` file to your Android device using the link above.
+2. When the download finishes, click **"Open"** or find the file in your "Downloads" folder.
+3. If prompted with *"For your security, your phone is not allowed to install unknown apps from this source,"* click **"Settings"** and toggle on **"Allow from this source"**.
+4. Go back and click **"Install"**. Once completed, click **"Open"** to start tracking!
+
+---
 
 ## ✨ Features
 
@@ -23,82 +35,77 @@ A comprehensive personal planner and habit tracker by mrvbfit, built with a mode
 - **AI-Powered Ideas**: Generate creative UX/UI feature ideas directly within the app using the Gemini API.
 - **Responsive Design**: A beautiful and functional interface on both desktop and mobile devices.
 
-## 📸 Screenshots
+---
 
-*(These are placeholders. Please replace them with actual screenshots from the live application.)*
+## 🛠️ Tech Stack & How It's Used
 
-| Day View | Analytics | Settings |
-| :---: | :---: | :---: |
-| ![Day View](https://via.placeholder.com/400x250.png?text=Day+View) | ![Analytics](https://via.placeholder.com/400x250.png?text=Analytics) | ![Settings](https://via.placeholder.com/400x250.png?text=Settings) |
-| **Month View** | **Habit Manager** | **Mobile View** |
-| ![Month View](https://via.placeholder.com/400x250.png?text=Month+View) | ![Habit Manager](https://via.placeholder.com/400x250.png?text=Habit+Manager) | ![Mobile View](https://via.placeholder.com/400x250.png?text=Mobile+View) |
+This project utilizes a modern full-stack architecture to ensure performance, scalability, and an excellent developer experience.
 
-## 🛠️ Tech Stack
+### Frontend
+- **React 19 & Vite**: Provides a blazingly fast, component-based user interface. Vite ensures rapid hot-module reloading during development.
+- **TypeScript**: Adds static typing to JavaScript, catching errors early and improving code maintainability.
+- **Tailwind CSS v4**: A utility-first CSS framework used to quickly style components and create a responsive, modern aesthetic.
+- **Framer Motion**: Used for fluid, interactive UI animations and transitions.
+- **Recharts**: Powers the data analytics dashboard, rendering clean and interactive SVG charts for habit tracking.
 
-- **Frontend**: React, Vite, TypeScript, Tailwind CSS
-- **Backend**: Spring Boot, Java 17, Maven
-- **Database**: MongoDB
-- **Key Libraries**:
-  - `lucide-react` for icons
-  - `date-fns` for date manipulation
-  - `recharts` for charts
-  - `motion` for animations
-  - `@google/genai` for AI features
-  - `spring-boot-starter-data-mongodb`
-  - `lombok`
+### Backend
+- **Spring Boot & Java 25**: Forms the robust, secure REST API that manages all business logic, data validation, and communication with the database.
+- **Maven**: Handles backend dependency management and build processes.
 
-## 🚀 Getting Started
+### Database
+- **MongoDB**: A flexible NoSQL database that stores all user habits, daily tasks, and streak history.
 
-Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
+---
 
-### Prerequisites
+## 🚀 Getting Started (How to Clone & Run)
 
-- Java 17 or higher
-- Maven 3.6+
-- Node.js (v18 or later recommended)
-- A MongoDB Atlas account.
-- A Gemini API Key from Google.
+Follow these detailed steps to get a local copy of the project up and running on your machine for development and testing.
 
-### Installation & Setup
+### 1. Prerequisites
+Make sure you have the following installed on your computer:
+- **Node.js** (v18 or later) & **npm**
+- **Java Development Kit (JDK) 25**
+- **Maven 3.6+**
+- **Git**
+- A **MongoDB Atlas** account (or local MongoDB server)
+- A **Google Gemini API Key** (for AI features)
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/mrvbfit/Task-manager-with-habit.git
-    cd Task-manager-with-habit
-    ```
+### 2. Clone the Repository
+Open your terminal or command prompt and run the following commands to download the code:
+```bash
+git clone https://github.com/mrvbfit/Task-manager-with-habit.git
+cd Task-manager-with-habit
+```
 
-3.  **Set up environment variables:**
-    Create a file named `.env` in the root of your project and add the following variables. This file will be used by the Spring Boot backend.
+### 3. Setup Environment Variables
+Create a file named `.env` in the root folder of the project. Add your MongoDB connection string and Gemini API key:
+```env
+# Your connection string from MongoDB Atlas
+MONGODB_URI="mongodb+srv://<user>:<password>@<cluster>/?appName=<app>"
+MONGODB_DATABASE="habit-track"
 
-    ```env
-    # Your connection string from MongoDB Atlas
-    MONGODB_URI="mongodb+srv://<user>:<password>@<cluster>/?appName=<app>"
-    MONGODB_DATABASE="habit-track"
+# Your API key from Google for Gemini
+GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
+```
 
-    # Your API key from Google for Gemini
-    GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
-    ```
+### 4. Install Frontend Dependencies
+Install all the required Node.js packages for the React frontend:
+```bash
+npm install
+```
 
-4.  **Install frontend dependencies:**
-    ```bash
-    npm install
-    ```
+### 5. Run the Backend Server
+Open a new terminal window, navigate to the backend folder, and start the Spring Boot server:
+```bash
+cd backend
+mvn spring-boot:run
+```
+*The backend API will start running at `http://localhost:8080`.*
 
-5.  **Run the Backend Server:**
-    Open a new terminal and navigate to the `backend` directory.
-    ```bash
-    cd backend
-    mvn spring-boot:run
-    ```
-    The backend will start at `http://localhost:8080`.
-
-6.  **Run the Frontend Development Server:**
-    In the root directory of the project, run:
-    ```bash
-    npm run dev
-    ```
-    Open http://localhost:5173 (or the port shown in the terminal) to view it in your browser.
-
-## 📜 License
-
-This project is licensed under the MIT License - see the LICENSE.md file for details.
+### 6. Run the Frontend Server
+Go back to your first terminal (in the root directory) and start the Vite development server:
+```bash
+npm run dev
+```
+*Open `http://localhost:5173` in your browser to view the application.*
+or `http://localhost:3000`
