@@ -69,15 +69,19 @@ import { Habit, Task, Badge, AppTheme, AppData, HabitType, User } from './types'
 import { cn } from './utils';
 import { DashboardView } from './DashboardView';
 import { DEFAULT_THEMES, BADGES } from './constants';
-import { Login } from './components/Login';
-import { Signup } from './components/Signup';
-import { UserProfile } from './components/UserProfile';
+
+const DEFAULT_USER: User = {
+  id: 'default',
+  email: 'user@example.com',
+  username: 'user',
+  firstName: 'User',
+  lastName: '',
+  avatarUrl: '',
+};
 
 export default function App() {
   // --- State ---
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<User>(DEFAULT_USER);
   const [activeTab, setActiveTab] = useState<'day' | 'week' | 'month' | 'grid' | 'habits' | 'stats' | 'settings' | 'dashboard'>('day');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [habits, setHabits] = useState<Habit[]>([]);
@@ -100,48 +104,6 @@ export default function App() {
   const [isChatLoading, setIsChatLoading] = useState(false);
 
   // --- Persistence ---
-  useEffect(() => {
-    // Check if user is already logged in
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      try {
-        const user: User = JSON.parse(savedUser);
-        setCurrentUser(user);
-      } catch (e) {
-        console.error('Failed to parse saved user', e);
-        localStorage.removeItem('user');
-      }
-    }
-    setIsAuthLoading(false);
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    setCurrentUser(null);
-    setAuthMode('login');
-  };
-
-  // If not authenticated, show login/signup
-  if (!currentUser) {
-    return isAuthLoading ? (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 via-purple-600 to-pink-500">
-        <div className="text-white flex flex-col items-center gap-4">
-          <Loader2 className="w-8 h-8 animate-spin" />
-          <p>Loading Habit Tracker...</p>
-        </div>
-      </div>
-    ) : authMode === 'login' ? (
-      <Login
-        onLoginSuccess={setCurrentUser}
-        onSwitchToSignup={() => setAuthMode('signup')}
-      />
-    ) : (
-      <Signup
-        onSignupSuccess={setCurrentUser}
-        onSwitchToLogin={() => setAuthMode('login')}
-      />
-    );
-  }
 
   // --- Persistence ---
   useEffect(() => {
@@ -1167,7 +1129,6 @@ export default function App() {
             ) : (
               <WifiOff size={16} className="text-orange-500" />
             )}
-            <UserProfile user={currentUser} onLogout={handleLogout} />
             <button 
               onClick={() => setIsMobileMenuOpen(true)}
               className="p-2 ml-1 bg-gray-100 hover:bg-gray-200 rounded-xl text-gray-600 transition-colors"
@@ -1209,17 +1170,6 @@ export default function App() {
             <div className="hidden lg:block flex-1">
               <h1 className="text-xl font-black tracking-tighter text-gray-800">HABIT TRACKER</h1>
               <p className="text-[10px] text-gray-500 mt-0.5">Build better habits, one day at a time</p>
-            </div>
-          </div>
-
-          {/* Desktop User Profile Section */}
-          <div className="hidden lg:block mb-6 px-2">
-            <div className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-100 rounded-2xl p-4">
-              <UserProfile user={currentUser} onLogout={handleLogout} />
-              <div className="mt-3 text-[11px] text-gray-600">
-                <p className="font-semibold">Welcome back!</p>
-                <p className="mt-1">{currentUser.email}</p>
-              </div>
             </div>
           </div>
 

@@ -15,13 +15,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors(Customizer.withDefaults()) // Uses your existing CorsConfig.java
+            .cors(Customizer.withDefaults())
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/**").permitAll() // Unlocks all your endpoints
-                .anyRequest().authenticated()
+                .anyRequest().permitAll()
             );
-            
+
         return http.build();
     }
 }

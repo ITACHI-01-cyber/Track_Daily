@@ -10,8 +10,10 @@ export interface Task {
   updatedAt?: string;
 }
 
+import { API_BASE_URL } from './api';
+
 class TaskService {
-  private baseURL: string = 'http://localhost:8080/api/tasks';
+  private baseURL: string = `${API_BASE_URL}/tasks`;
 
   private async request<T>(path: string, options?: RequestInit): Promise<T> {
     const response = await fetch(`${this.baseURL}${path}`, {
