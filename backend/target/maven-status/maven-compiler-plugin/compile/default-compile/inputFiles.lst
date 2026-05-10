@@ -1,6 +1,7 @@
 /home/mrvbfit/Projects/habit-track/backend/src/main/java/com/habittrack/HabitTrackApplication.java
 /home/mrvbfit/Projects/habit-track/backend/src/main/java/com/habittrack/config/CorsConfig.java
 /home/mrvbfit/Projects/habit-track/backend/src/main/java/com/habittrack/config/SecurityConfig.java
+/home/mrvbfit/Projects/habit-track/backend/src/main/java/com/habittrack/controller/AiController.java
 /home/mrvbfit/Projects/habit-track/backend/src/main/java/com/habittrack/controller/DataController.java
 /home/mrvbfit/Projects/habit-track/backend/src/main/java/com/habittrack/controller/TaskController.java
 /home/mrvbfit/Projects/habit-track/backend/src/main/java/com/habittrack/model/Task.java
