@@ -3,6 +3,8 @@ import { type Dispatch, type SetStateAction } from 'react';
 import { Habit, Task } from '../../types';
 import { cn } from '../../utils';
 
+const API_BASE = window.location.hostname === 'localhost' ? '/api' : 'https://track-daily.onrender.com/api';
+
 interface AIAgentPanelProps {
   tasks: Task[];
   habits: Habit[];
@@ -57,7 +59,7 @@ export function AIAgentPanel({
         })),
       };
 
-      const response = await fetch('/api/ai/chat', {
+      const response = await fetch(`${API_BASE}/ai/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -69,6 +69,8 @@ import { cn } from './utils';
 import { DashboardView } from './DashboardView';
 import { DEFAULT_THEMES, BADGES } from './constants';
 
+const API_BASE = window.location.hostname === 'localhost' ? '/api' : 'https://track-daily.onrender.com/api';
+
 const DEFAULT_USER: User = {
   id: 'default',
   email: 'user@example.com',
@@ -123,24 +125,22 @@ export default function App() {
 
       // Try to get server data
       try {
-        const response = await fetch(`/api/data?userId=${currentUser.id}`);
-        if (response.ok) {
-          const contentType = response.headers.get("content-type");
-          if (contentType && contentType.includes("application/json")) {
-            serverData = await response.json() as AppData;
-            setIsOnline(true);
-          } else {
-            setIsOnline(false);
-          }
-        } else {
-          setIsOnline(false);
+        const response = await fetch(`${API_BASE}/data?userId=${currentUser.id}`);
+        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+        
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("Invalid content type (backend might still be booting)");
         }
+        
+        serverData = await response.json() as AppData;
+        setIsOnline(true);
       } catch (e) {
         setIsOnline(false);
-        // Auto-retry connection if backend is still booting
-        if (retryCount < 5) {
-          console.log(`Backend still booting up. Retrying connection... (${retryCount + 1}/5)`);
-          setTimeout(() => setRetryCount(prev => prev + 1), 3000);
+        // Auto-retry connection if backend is waking up from sleep
+        if (retryCount < 12) {
+          console.log(`Backend waking up from sleep. Retrying... (${retryCount + 1}/12)`);
+          setTimeout(() => setRetryCount(prev => prev + 1), 5000);
         } else {
           console.error('Failed to load data from server after retries', e);
         }
@@ -188,7 +188,7 @@ export default function App() {
     }, 100);
 
     try {
-      const response = await fetch(`/api/data?userId=${currentUser.id}`, {
+      const response = await fetch(`${API_BASE}/data?userId=${currentUser.id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -778,7 +778,7 @@ export default function App() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold flex items-center gap-2"><Search size={20} /> Database Inspector</h3>
             <a 
-              href="/api/data" 
+            href={`${API_BASE}/data`} 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1"
