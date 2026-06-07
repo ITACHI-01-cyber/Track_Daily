@@ -3,3 +3,4 @@ builder = "nixpacks"
 
 [deploy]
 startCommand = "cd backend && mvn spring-boot:run"
+# Note: fixed typo from 'sprin-boot' to 'spring-boot'
