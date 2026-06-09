@@ -477,6 +477,7 @@ export default function App() {
       isChatLoading, setIsChatLoading,
       isFabOpen, setIsFabOpen,
       saveDataToServer, handleManualSync, exportData, importData,
+      addTask, addHabit, updateTask, updateHabit,
       toggleTask, deleteTask, toggleHabit, deleteHabit,
       getDayStreakColor, maxStreak
     }}>
