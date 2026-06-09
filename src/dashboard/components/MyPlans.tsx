@@ -26,15 +26,15 @@ export function MyPlans({ habits, tasks }: MyPlansProps) {
   ].slice(0, 3);
 
   return (
-    <div className="bg-card-bg border border-card-border rounded-[32px] p-8 h-full flex flex-col">
+    <div className="bg-card-surface border border-border-strong rounded-[32px] p-8 h-full flex flex-col">
       <div className="flex items-center justify-between mb-8">
-        <h3 className="text-lg font-display font-semibold text-white">Active Plans</h3>
-        <span className="text-xs text-gray-500">{plans.length} tracked</span>
+        <h3 className="text-lg font-display font-semibold text-text-main">Active Plans</h3>
+        <span className="text-xs text-text-muted">{plans.length} tracked</span>
       </div>
 
       <div className="flex flex-col gap-5">
         {plans.length === 0 ? (
-          <div className="text-sm text-gray-400 border border-dashed border-card-border rounded-2xl p-6 text-center">
+          <div className="text-sm text-text-muted border border-dashed border-border-strong rounded-2xl p-6 text-center">
             Add habits or tasks to see plans here.
           </div>
         ) : (
@@ -42,13 +42,13 @@ export function MyPlans({ habits, tasks }: MyPlansProps) {
             <div key={plan.id}>
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div>
-                  <h4 className="text-white font-display font-bold">{plan.name}</h4>
-                  <p className="text-gray-400 text-xs mt-1">{plan.goal}</p>
+                  <h4 className="text-text-main font-display font-bold">{plan.name}</h4>
+                  <p className="text-text-muted text-xs mt-1">{plan.goal}</p>
                 </div>
-                <span className="text-[10px] text-gray-500 font-bold uppercase">{plan.target}</span>
+                <span className="text-[10px] text-text-muted font-bold uppercase">{plan.target}</span>
               </div>
-              <div className="overflow-hidden h-3 rounded-full bg-gray-800">
-                <div className="h-full bg-brand-lime transition-all duration-700" style={{ width: `${plan.progress}%` }} />
+              <div className="overflow-hidden h-3 rounded-full bg-panel-bg">
+                <div className="h-full bg-cta-btn transition-all duration-700" style={{ width: `${plan.progress}%` }} />
               </div>
             </div>
           ))

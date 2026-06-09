@@ -15,18 +15,18 @@ export function DashboardHeader({ tasks, habits }: DashboardHeaderProps) {
   return (
     <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
       <div>
-        <h1 className="text-2xl font-display font-bold text-white">Dashboard</h1>
-        <p className="text-gray-400 text-sm">
+        <h1 className="text-2xl font-display font-bold text-text-main">Dashboard</h1>
+        <p className="text-text-muted text-sm">
           {tasksToday.filter(task => task.completed).length}/{tasksToday.length} tasks and {habitsDone}/{habits.length} habits completed today
         </p>
       </div>
 
       <div className="relative group w-full md:w-72">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-brand-lime transition-colors" size={18} />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-cta-btn transition-colors" size={18} />
         <input
           type="text"
           placeholder="Search tasks and habits..."
-          className="bg-card-bg border border-card-border rounded-full py-2.5 pl-11 pr-6 text-sm w-full focus:outline-none focus:border-brand-lime transition-all text-white"
+          className="bg-card-surface border border-border-strong rounded-full py-2.5 pl-11 pr-6 text-sm w-full focus:outline-none focus:border-cta-btn transition-all text-text-main"
         />
       </div>
     </header>

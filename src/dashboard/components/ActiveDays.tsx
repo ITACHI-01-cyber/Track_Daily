@@ -25,10 +25,10 @@ export function ActiveDays({ tasks, habits, onSelectDate }: ActiveDaysProps) {
   };
 
   return (
-    <div className="bg-brand-blue rounded-[32px] p-8 text-white h-full">
+    <div className="bg-card-surface border border-border-strong rounded-[32px] p-8 text-text-main h-full">
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-xl font-display font-semibold">Your Active Days</h2>
-        <button className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors">
+        <button className="flex items-center gap-2 text-sm text-text-muted hover:text-text-main transition-colors">
           {format(new Date(), 'MMMM')} <ChevronDown size={16} />
         </button>
       </div>
@@ -49,9 +49,9 @@ export function ActiveDays({ tasks, habits, onSelectDate }: ActiveDaysProps) {
               onClick={() => onSelectDate(day)}
               className={cn(
                 "w-8 h-8 rounded-full flex items-center justify-center text-xs transition-colors",
-                intensity > 0 ? "bg-brand-lime text-bg-dark font-bold" : "bg-black/20 hover:bg-black/40",
-                intensity > 2 && "shadow-lg shadow-black/20 ring-2 ring-white/20",
-                isToday(day) && "outline outline-2 outline-white"
+                intensity > 0 ? "bg-cta-btn text-white font-bold" : "bg-page-bg hover:bg-panel-bg text-text-muted",
+                intensity > 2 && "shadow-lg shadow-black/20 ring-2 ring-black/10",
+                isToday(day) && "outline outline-2 outline-cta-btn"
               )}
               title={`${intensity} completions`}
             >

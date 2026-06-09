@@ -22,11 +22,11 @@ export function FocusCard({ tasks, habits }: FocusCardProps) {
   const offset = circumference - (percentage / 100) * circumference;
 
   return (
-    <div className="bg-card-bg border border-card-border rounded-[32px] p-8 flex items-center justify-between overflow-hidden relative h-full">
+    <div className="bg-card-surface border border-border-strong rounded-[32px] p-8 flex items-center justify-between overflow-hidden relative h-full">
       <div className="flex flex-col gap-5">
         <div>
-          <h3 className="text-lg font-display font-semibold text-white">Today Focus</h3>
-          <p className="text-gray-400 text-xs">Live progress from MongoDB synced data</p>
+          <h3 className="text-lg font-display font-semibold text-text-main">Today Focus</h3>
+          <p className="text-text-muted text-xs">Live progress from MongoDB synced data</p>
         </div>
 
         <div className="grid grid-cols-2 gap-3 text-sm">
@@ -39,7 +39,7 @@ export function FocusCard({ tasks, habits }: FocusCardProps) {
 
       <div className="relative flex items-center justify-center shrink-0">
         <svg className="w-24 h-24 transform -rotate-90">
-          <circle cx="48" cy="48" r={radius} stroke="currentColor" strokeWidth="8" fill="transparent" className="text-gray-800" />
+          <circle cx="48" cy="48" r={radius} stroke="currentColor" strokeWidth="8" fill="transparent" className="text-gray-200" />
           <circle
             cx="48"
             cy="48"
@@ -50,11 +50,11 @@ export function FocusCard({ tasks, habits }: FocusCardProps) {
             strokeDasharray={circumference}
             strokeDashoffset={offset}
             strokeLinecap="round"
-            className="text-brand-lime transition-all duration-500"
+            className="text-cta-btn transition-all duration-500"
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-sm font-bold font-display text-white">{percentage}%</span>
+          <span className="text-sm font-bold font-display text-text-main">{percentage}%</span>
         </div>
       </div>
     </div>
@@ -63,9 +63,9 @@ export function FocusCard({ tasks, habits }: FocusCardProps) {
 
 function Metric({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-black/20 border border-card-border/60 p-3">
-      <div className="flex items-center gap-2 text-brand-lime">{icon}<span className="text-[10px] uppercase font-bold text-gray-500">{label}</span></div>
-      <div className="text-white font-display font-bold mt-1">{value}</div>
+    <div className="rounded-2xl bg-page-bg border border-border-strong/60 p-3">
+      <div className="flex items-center gap-2 text-cta-btn">{icon}<span className="text-[10px] uppercase font-bold text-text-muted">{label}</span></div>
+      <div className="text-text-main font-display font-bold mt-1">{value}</div>
     </div>
   );
 }

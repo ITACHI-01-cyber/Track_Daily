@@ -59,7 +59,7 @@ export function DashboardView({
   };
 
   return (
-    <div className="min-h-full bg-black/80 backdrop-blur-xl text-white font-sans -m-4 md:-m-6 lg:-m-10 p-4 md:p-8 lg:p-10 selection:bg-brand-lime selection:text-bg-dark">
+    <div className="min-h-full bg-page-bg text-text-main font-sans -m-4 md:-m-6 lg:-m-10 p-4 md:p-8 lg:p-10 selection:bg-indigo-100 selection:text-indigo-900">
       <div className="max-w-[1400px] mx-auto">
         <DashboardHeader tasks={tasks} habits={habits} />
 

@@ -5,11 +5,16 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Outfit", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-  --color-brand-lime: #D7FE63;
-  --color-brand-blue: #4B6BFB;
-  --color-bg-dark: #121316;
-  --color-card-bg: #1C1D21;
-  --color-card-border: #2A2C32;
+  
+  /* New Matte Off-White Theme Colors */
+  --color-page-bg: #EDE8DF;
+  --color-card-surface: #F5F1EA;
+  --color-panel-bg: #F0EBE2;
+  --color-border-strong: #2B2B2B;
+  --color-cta-btn: #E8622A;
+  --color-text-main: #1A1A1A;
+  --color-text-muted: #6B6560;
+  --color-divider: #D4CEC4;
 }
 
 @layer utilities {

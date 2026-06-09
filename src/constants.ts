@@ -59,3 +59,15 @@ export const BADGES: Badge[] = [
     icon: '📅',
   },
 ];
+
+export const priorityBorderColor: Record<string, string> = {
+  High: 'border-l-red-500',
+  Medium: 'border-l-amber-500',
+  Low: 'border-l-emerald-500',
+};
+
+export const priorityBadgeColor: Record<string, string> = {
+  High: 'bg-red-100 text-red-700',
+  Medium: 'bg-amber-100 text-amber-700',
+  Low: 'bg-emerald-100 text-emerald-700',
+};

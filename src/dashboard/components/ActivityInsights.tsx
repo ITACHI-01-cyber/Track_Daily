@@ -34,10 +34,10 @@ export function ActivityInsights({ tasks, habits }: ActivityInsightsProps) {
   const consistency = Math.round((totalHabitsDone / possibleHabitCompletions) * 100);
 
   return (
-    <div className="bg-card-bg border border-card-border rounded-[32px] p-8 h-full">
+    <div className="bg-card-surface border border-border-strong rounded-[32px] p-8 h-full">
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-xl font-display font-semibold text-white">Activity Insights</h2>
-        <button className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors">
+        <h2 className="text-xl font-display font-semibold text-text-main">Activity Insights</h2>
+        <button className="flex items-center gap-2 text-sm text-text-muted hover:text-text-main transition-colors">
           Weekly View <ChevronDown size={16} />
         </button>
       </div>
@@ -46,7 +46,7 @@ export function ActivityInsights({ tasks, habits }: ActivityInsightsProps) {
         <InsightChart
           data={data}
           dataKey="completedHabits"
-          color="#D7FE63"
+          color="#1A1A1A"
           label="Habit Wins"
           value={totalHabitsDone.toString()}
           caption={`Consistency: ${consistency}%`}
@@ -96,17 +96,17 @@ function InsightChart({ data, dataKey, color, label, value, caption }: InsightCh
               </linearGradient>
             </defs>
             <Tooltip
-              contentStyle={{ background: '#1C1D21', border: '1px solid #2A2C32', borderRadius: 12, color: '#fff' }}
-              labelStyle={{ color: '#D7FE63' }}
+              contentStyle={{ background: '#F5F1EA', border: '1px solid #2B2B2B', borderRadius: 12, color: '#1A1A1A' }}
+              labelStyle={{ color: '#1A1A1A' }}
             />
             <Area type="monotone" dataKey={dataKey} stroke={color} fill={`url(#${gradientId})`} strokeWidth={2} dot={{ r: 4, fill: color }} />
           </AreaChart>
         </ResponsiveContainer>
       </div>
       <div>
-        <span className="text-sm text-gray-400">{label}</span>
-        <div className="text-3xl font-display font-bold mt-1 text-white">{value}</div>
-        <div className="text-[10px] text-gray-500 uppercase font-bold tracking-widest mt-4">{caption}</div>
+        <span className="text-sm text-text-muted">{label}</span>
+        <div className="text-3xl font-display font-bold mt-1 text-text-main">{value}</div>
+        <div className="text-[10px] text-text-muted uppercase font-bold tracking-widest mt-4">{caption}</div>
       </div>
     </div>
   );

@@ -83,19 +83,19 @@ export function AIAgentPanel({
   };
 
   return (
-    <div className="bg-card-bg border border-card-border rounded-[32px] p-6 flex flex-col h-[450px]">
-      <div className="flex items-center gap-2 mb-4 pb-4 border-b border-card-border">
-        <div className="p-2 rounded-xl text-bg-dark bg-brand-lime shadow-sm"><Bot size={20} /></div>
+    <div className="bg-card-surface border border-border-strong rounded-[32px] p-6 flex flex-col h-[450px]">
+      <div className="flex items-center gap-2 mb-4 pb-4 border-b border-border-strong">
+        <div className="p-2 rounded-xl text-white bg-cta-btn shadow-sm"><Bot size={20} /></div>
         <div>
-          <h3 className="text-lg font-bold text-white leading-tight">AI Productivity Agent</h3>
-          <p className="text-xs text-gray-500">Sees all habits and trackers</p>
+          <h3 className="text-lg font-bold text-text-main leading-tight">AI Productivity Agent</h3>
+          <p className="text-xs text-text-muted">Sees all habits and trackers</p>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2 scrollbar-hide">
         {chatMessages.map((msg, i) => (
           <div key={i} className={cn("flex w-full", msg.role === 'user' ? "justify-end" : "justify-start")}>
-            <div className={cn("max-w-[85%] rounded-2xl p-3 shadow-sm", msg.role === 'user' ? "bg-brand-blue text-white rounded-br-sm" : "bg-black/30 border border-card-border text-gray-100 rounded-bl-sm")}>
+            <div className={cn("max-w-[85%] rounded-2xl p-3 shadow-sm", msg.role === 'user' ? "bg-indigo-500 text-text-main rounded-br-sm" : "bg-page-bg border border-border-strong text-text-main rounded-bl-sm")}>
               <div className="flex items-center gap-1.5 mb-1 opacity-70 text-[10px] uppercase font-bold tracking-wider">
                 {msg.role === 'user' ? <User size={12} /> : <Sparkles size={12} />}
                 {msg.role === 'user' ? 'You' : 'Agent'}
@@ -106,24 +106,24 @@ export function AIAgentPanel({
         ))}
         {isChatLoading && (
           <div className="flex w-full justify-start">
-            <div className="bg-black/30 border border-card-border text-gray-100 rounded-2xl rounded-bl-sm p-4 flex items-center gap-3 shadow-sm">
-              <Loader2 size={16} className="animate-spin text-brand-lime" />
-              <span className="text-sm text-gray-500 font-medium animate-pulse">Agent is thinking...</span>
+            <div className="bg-page-bg border border-border-strong text-text-main rounded-2xl rounded-bl-sm p-4 flex items-center gap-3 shadow-sm">
+              <Loader2 size={16} className="animate-spin text-cta-btn" />
+              <span className="text-sm text-text-muted font-medium animate-pulse">Agent is thinking...</span>
             </div>
           </div>
         )}
       </div>
 
-      <div className="flex gap-2 items-center bg-black/30 p-1.5 rounded-2xl border border-card-border focus-within:border-brand-lime transition-all shadow-sm">
+      <div className="flex gap-2 items-center bg-page-bg p-1.5 rounded-2xl border border-border-strong focus-within:border-cta-btn transition-all shadow-sm">
         <input
           type="text"
           value={chatInput}
           onChange={e => setChatInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
           placeholder="Ask about your habits, tasks, or streaks..."
-          className="flex-1 bg-transparent border-none focus:outline-none px-3 text-sm text-gray-100"
+          className="flex-1 bg-transparent border-none focus:outline-none px-3 text-sm text-text-main"
         />
-        <button onClick={handleSendMessage} disabled={isChatLoading || !chatInput.trim()} className="p-2.5 rounded-xl text-bg-dark bg-brand-lime transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+        <button onClick={handleSendMessage} disabled={isChatLoading || !chatInput.trim()} className="p-2.5 rounded-xl text-white bg-cta-btn transition-all disabled:opacity-50 disabled:cursor-not-allowed">
           <Send size={18} />
         </button>
       </div>
